@@ -1,11 +1,11 @@
 package com.example.listviewandgrid
 
-class ItemList {
 
 
-    data class ItemLists(
-        var judul : String ,
-        var subjudul : String ,
-        var imageUrl : String
+
+    data class ItemList(
+        var id : String,
+        val judul: String,
+        val subJudul: String,
+        val imageUrl: String
     )
-}

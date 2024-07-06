@@ -1,7 +1,10 @@
 plugins {
-    alias(libs.plugins.androidApplication)
-    alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.androidApplication) // Menggunakan alias untuk plugin com.android.application
+    alias(libs.plugins.jetbrainsKotlinAndroid) // Menggunakan alias untuk plugin Kotlin Android
+    id("com.google.gms.google-services") // Menambahkan plugin Google Services secara eksplisit
 }
+
+
 
 android {
     namespace = "com.example.listviewandgrid"
@@ -63,6 +66,18 @@ dependencies {
 
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     implementation(libs.androidx.appcompat)
+    implementation(platform("com.google.firebase:firebase-bom:33.1.1"))
+    implementation("com.google.firebase:firebase-analytics")
+    // Import the BoM for the Firebase platform
+    implementation(platform("com.google.firebase:firebase-bom:33.1.1"))
+    // Declare the dependency for the Cloud Firestore library
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation("com.google.firebase:firebase-firestore")
+    implementation ("com.google.android.material:material:1.3.0")
+    implementation(libs.material)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.androidx.activity)
+
 
 
     testImplementation(libs.junit)

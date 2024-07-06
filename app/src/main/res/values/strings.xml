@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ListViewAndGrid</string>
+    <string name="title_activity_news_catalog">NewsCatalog</string>
+    <string name="title_activity_news_add">NewsAdd</string>
 </resources>

@@ -1,37 +1,91 @@
 package com.example.listviewandgrid
 
+import android.app.ProgressDialog
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.activity.enableEdgeToEdge
-
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.FirebaseApp
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : ComponentActivity() {
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var floatingActionButton: FloatingActionButton
+    private lateinit var myAdapter: Adapter
+    private lateinit var itemList: MutableList<ItemList>
+    private lateinit var db: FirebaseFirestore
+    private lateinit var progressDialog: ProgressDialog
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_main)
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
-        //recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.layoutManager = GridLayoutManager(this, 2)
+
+        FirebaseApp.initializeApp( this)
+        db = FirebaseFirestore.getInstance()
+
+        val recyclerView = findViewById<RecyclerView>(R.id.rcvNews)
+        val floatingActionButton = findViewById<FloatingActionButton>(R.id.floatAddNews); progressDialog = ProgressDialog( this@MainActivity).apply {
+            setTitle("Loading...")
+        }
+
         recyclerView.setHasFixedSize(true)
-        val itemList = listOf(
-            ItemList.ItemLists(
-                "judul1", "deskripsi1",
-                "https://static01.nyt.com/images/2021/02/17/dining/17tootired-grilled-cheese/17tootired-grilled-cheese-jumbo.jpg?quality=75&auto=webp"
-            ),
-            ItemList.ItemLists(
-                "judul2", "deskripsi2",
-                "https://static01.nyt.com/images/2021/02/28/dining/ch-pasta-alla-vodka/merlin_145792752_fabec26c-908c-4f71-8c84-2b145849da43-jumbo.jpg?quality=75&auto=webp"
-            ),
-            ItemList.ItemLists(
-                "judul3", "deskripsi3",
-                "https://static01.nyt.com/images/2021/02/17/dining/17tootired-grain-bowl/17tootired-grain-bowl-jumbo.jpg?quality=75&auto=webp"
-            )
-        )
-        val adapter = Adapter(itemList)
-        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager( this)
+        itemList= ArrayList()
+        myAdapter = Adapter(itemList)
+        recyclerView.adapter = myAdapter
+
+
+        floatingActionButton.setOnClickListener {
+            val toAddPage = Intent(this@MainActivity, NewsAdd::class.java)
+            startActivity(toAddPage)
+        }
+
+        myAdapter.setOnItemClickListener(object: Adapter.OnItemClickListener {
+            override fun onItemClick(item: ItemList) {
+                val intent = Intent( this@MainActivity, NewsDetail::class.java).apply {
+                    putExtra(  "id", item.id)
+                    putExtra( "title", item.judul)
+                    putExtra( "desc", item.subJudul)
+                    putExtra( "imageUrl", item.imageUrl)
+                }
+                startActivity(intent)
+            }
+        })
+
     }
+
+    override fun onStart(){
+        super.onStart()
+        getData()
     }
+
+    private fun getData() {
+        progressDialog.show()
+        db.collection("News")
+            .get()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    itemList.clear()
+                    for (document in task.result) {
+                        val item = ItemList(
+                            document.id,
+                            document.getString("title") ?: "",
+                            document.getString("desc") ?: "",
+                            document.getString("imgUrl") ?: ""
+                        )
+                        itemList.add(item)
+                        Log.d("data", "${document.id} => ${document.data}")
+                    }
+                    myAdapter.notifyDataSetChanged()
+                } else {
+                    Log.w("data", "Error getting documents.", task.exception)
+                }
+                progressDialog.dismiss()
+            }
+    }
+}
+
+

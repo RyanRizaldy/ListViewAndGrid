@@ -9,7 +9,8 @@ import androidx.annotation.NonNull
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-class Adapter(private val itemList: List<ItemList.ItemLists>):RecyclerView.Adapter<Adapter.ViewHolder>() {
+class Adapter(private val itemList: MutableList<ItemList>):RecyclerView.Adapter<Adapter.ViewHolder>() {
+    private var listener: OnItemClickListener? = null
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Adapter.ViewHolder {
        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_data,parent,false)
         return ViewHolder(view)
@@ -18,8 +19,12 @@ class Adapter(private val itemList: List<ItemList.ItemLists>):RecyclerView.Adapt
     override fun onBindViewHolder(holder: Adapter.ViewHolder, position: Int) {
         val item = itemList[position]
         holder.judul.text = item.judul
-        holder.subJudul.text = item.subjudul
+        holder.subJudul.text = item.subJudul
         Glide.with(holder.imageView.context).load(item.imageUrl).into(holder.imageView)
+
+        holder.itemView.setOnClickListener{
+            listener?.onItemClick(item)
+        }
     }
 
     override fun getItemCount(): Int {
@@ -29,5 +34,13 @@ class Adapter(private val itemList: List<ItemList.ItemLists>):RecyclerView.Adapt
         val imageView : ImageView = itemView.findViewById(R.id.item_image)
         val judul : TextView = itemView.findViewById(R.id.judul)
         val subJudul : TextView = itemView.findViewById(R.id.sub_judul)
+    }
+
+    interface OnItemClickListener {
+        fun onItemClick(item: ItemList)
+    }
+
+    fun setOnItemClickListener(listener: OnItemClickListener) {
+        this.listener = listener
     }
 }
